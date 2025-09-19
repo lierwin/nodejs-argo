@@ -1,49 +1,202 @@
-# 说明 （部署前请仔细阅读完）
+<div align="center">
+
+# nodejs-argo隧道代理
+
+[![npm version](https://img.shields.io/npm/v/nodejs-argo.svg)](https://www.npmjs.com/package/nodejs-argo)
+[![npm downloads](https://img.shields.io/npm/dm/nodejs-argo.svg)](https://www.npmjs.com/package/nodejs-argo)
+[![License](https://img.shields.io/npm/l/nodejs-argo.svg)](https://github.com/eooce/nodejs-argo/blob/main/LICENSE)
+
+nodejs-argo是一个强大的Argo隧道部署工具，专为PaaS平台和游戏玩具平台设计。它支持多种代理协议（VLESS、VMess、Trojan等），并集成了哪吒探针功能。
+
+---
+
+Telegram交流反馈群组：https://t.me/eooceu
+</div>
+
+## 说明 （部署前请仔细阅读）
+
 * 本项目是针对node环境的paas平台和游戏玩具而生，采用Argo隧道部署节点，集成哪吒探针v0或v1可选。
 * node玩具平台只需上传index.js和package.json即可，paas平台需要docker部署的才上传Dockerfile。
-* 如需是链接github部署，请先删除README.md说明文件，安全起见，已混淆主代码部分。
 * 不填写ARGO_DOMAIN和ARGO_AUTH两个变量即启用临时隧道，反之则使用固定隧道。
-* 若遇到已获取到临时隧道但节点不通，说明域名被墙，重启即可
-* 无需设置NEZHA_TLS,当哪吒端口为{443,8443,2096,2087,2083,2053}其中之一时，自动开启--tls。
-* 右边的Releases中已适配FreeBSD，自行下载，类似的平台Serv00，CT8
+* 哪吒v0/v1可选,当哪吒端口为{443,8443,2096,2087,2083,2053}其中之一时，自动开启tls。
 
-* PaaS 平台设置的环境变量，index.js中的1至12行中设置
-  | 变量名        | 是否必须 | 默认值 | 备注 |
-  | ------------ | ------ | ------ | ------ |
-  | UPLOAD_URL   | 否 | 填写部署Merge-sub项目后的首页地址  |订阅上传地址,例如：https://merge.serv00.net|
-  | PROHECT_URL  | 否 | https://www.google.com     |项目分配的域名|
-  | PORT         | 否 |  3000  |http服务监听端口，也是订阅端口     |
-  | ARGO_PORT    | 否 |  8001  |argo隧道端口，固定隧道token需和cloudflare后台设置的一致|
-  | UUID         | 否 | 89c13786-25aa-4520-b2e7-12cd60fb5202|UUID,使用哪吒v1在不同的平台部署需要修改|
-  | NEZHA_SERVER | 否 |        | 哪吒面板域名，v1：nz.aaa.com:8008  v0: nz.aaa.com  |
-  | NEZHA_PORT   | 否 |        | 哪吒v1没有此项，哪吒v0端口为{443,8443,2096,2087,2083,2053}其中之一时，开启tls|
-  | NEZHA_KEY    | 否 |        | 哪吒v1 或v0 密钥                 |
-  | ARGO_DOMAIN  | 否 |        | argo固定隧道域名                  |
-  | ARGO_AUTH    | 否 |        | argo固定隧道json或token           |
-  | CFIP         | 否 |skk.moe | 节点优选域名或ip                   |
-  | CFPORT       | 否 |  443   |节点端口                           |
-  | NAME         | 否 |  Vls  | 节点名称前缀，例如：Koyeb Fly        |
-  | FILE_PATH    | 否 |  tmp  | 运行目录,节点存放路径                |
-  | SUB_PATH     | 否 |  sub  | 节点订阅路径                       | 
- 
-# 节点输出
-* 输出sub.txt节点文件，默认存放路径为tmp
-* 订阅：分配的域名/${SUB_PATH};例如https://www.google.com/${SUB_PATH}
-* 非标端口订阅(游戏类):分配的域名:端口/${SUB_PATH},前缀是http，例如http://www.google.com:1234/${SUB_PATH}
+## 📋 环境变量
 
-# 其他
-* 本项目已添加自动访问保活功能，仅支持不重启停机的平台，需在第2行中添加项目分配的域名。建议配合外部自动访问保活，保活项目地址：https://github.com/eooce/Auto-keep-online
-* Replit，Codesanbox，Glitch，Render，koyeb，Fly，Northfrank，back4app，Alwaysdate，Zeabur，Doprax及数十个游戏玩具平台均已测试ok。
-* Render及其他比较严格的容器平台，请使用docker image部署，Dockerfile地址：https://github.com/eooce/nodejs-argo-image
+| 变量名 | 是否必须 | 默认值 | 说明 |
+|--------|----------|--------|------|
+| UPLOAD_URL | 否 | - | 订阅上传地址 |
+| PROJECT_URL | 否 | https://www.google.com | 项目分配的域名 |
+| AUTO_ACCESS | 否 | false | 是否开启自动访问保活 |
+| PORT | 否 | 3000 | HTTP服务监听端口 |
+| ARGO_PORT | 否 | 8001 | Argo隧道端口 |
+| UUID | 否 | 89c13786-25aa-4520-b2e7-12cd60fb5202 | 用户UUID |
+| NEZHA_SERVER | 否 | - | 哪吒面板域名 |
+| NEZHA_PORT | 否 | - | 哪吒端口 |
+| NEZHA_KEY | 否 | - | 哪吒密钥 |
+| ARGO_DOMAIN | 否 | - | Argo固定隧道域名 |
+| ARGO_AUTH | 否 | - | Argo固定隧道密钥 |
+| CFIP | 否 | www.visa.com.tw | 节点优选域名或IP |
+| CFPORT | 否 | 443 | 节点端口 |
+| NAME | 否 | Vls | 节点名称前缀 |
+| FILE_PATH | 否 | ./tmp | 运行目录 |
+| SUB_PATH | 否 | sub | 订阅路径 |
 
-# vps一键部署命令
-* 3000端口改为可用的的开放端口,母鸡可忽略,对应哪吒变量也可更改，不需要哪吒可忽略
-* 其他变量可自行添加在哪吒变量后面，参考上方变量表，例如固定隧道等，每个变量之间有一个空格
-* 订阅：ip:端口/sub
+## 🌐 订阅地址
+
+- 标准端口：`https://your-domain.com/sub`
+- 非标端口：`http://your-domain.com:port/sub`
+
+---
+
+## 🚀 进阶使用
+
+### 安装
+
+```bash
+# 全局安装（推荐）
+npm install -g nodejs-argo
+
+# 或者使用yarn
+yarn global add nodejs-argo
+
+# 或者使用pnpm
+pnpm add -g nodejs-argo
 ```
-apt-get update && apt-get install -y curl nodejs npm screen && curl -O https://raw.githubusercontent.com/eooce/nodejs-argo/main/index.js && curl -O https://raw.githubusercontent.com/eooce/nodejs-argo/main/package.json && npm install && chmod +x index.js && NAME=Vls PORT=3000 NEZHA_SERVER=nz.abcd.cn NEZHA_PORT=5555 NEZHA_KEY=12345678 screen node index.js
+
+### 基本使用
+
+```bash
+# 直接运行（使用默认配置）
+nodejs-argo
+
+# 使用npx运行
+npx nodejs-argo
+
+# 设置环境变量运行
+ PORT=3000 npx nodejs-argo
 ```
-  
+
+### 环境变量配置
+
+可使用 `.env` 文件来配置环境变量运行
+
+
+或者直接在命令行中设置：
+
+```bash
+export UPLOAD_URL="https://your-merge-sub-domain.com"
+export PROJECT_URL="https://your-project-domain.com"
+export PORT=3000
+export UUID="your-uuid-here"
+export NEZHA_SERVER="nz.your-domain.com:8008"
+export NEZHA_KEY="your-nezha-key"
+```
+
+## 📦 作为npm模块使用
+
+```javascript
+// CommonJS
+const nodejsArgo = require('nodejs-argo');
+
+// ES6 Modules
+import nodejsArgo from 'nodejs-argo';
+
+// 启动服务
+nodejsArgo.start();
+```
+
+## 🔧 后台运行
+
+### 使用screen（推荐）
+```bash
+# 创建screen会话
+screen -S argo
+
+# 运行应用
+nodejs-argo
+
+# 按 Ctrl+A 然后按 D 分离会话
+# 重新连接：screen -r argo
+```
+
+### 使用tmux
+```bash
+# 创建tmux会话
+tmux new-session -d -s argo
+
+# 运行应用
+tmux send-keys -t argo "nodejs-argo" Enter
+
+# 分离会话：tmux detach -s argo
+# 重新连接：tmux attach -t argo
+```
+
+### 使用PM2
+```bash
+# 安装PM2
+npm install -g pm2
+
+# 启动应用
+pm2 start nodejs-argo --name "argo-service"
+
+# 管理应用
+pm2 status
+pm2 logs argo-service
+pm2 restart argo-service
+```
+
+### 使用systemd（Linux系统服务）
+```bash
+# 创建服务文件
+sudo nano /etc/systemd/system/nodejs-argo.service
+
+```
+[Unit]
+Description=Node.js Argo Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/test
+Environment=ARGO_PORT=8080
+Environment=PORT=3000
+ExecStart=/usr/bin/npx nodejs-argo
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+# 启动服务
+sudo systemctl start nodejs-argo
+sudo systemctl enable nodejs-argo
+```
+
+## 🔄 更新
+
+```bash
+# 更新全局安装的包
+npm update -g nodejs-argo
+
+# 或者重新安装
+npm uninstall -g nodejs-argo
+npm install -g nodejs-argo
+```
+
+## 📚 更多信息
+
+- [GitHub仓库](https://github.com/eooce/nodejs-argo)
+- [npm包页面](https://www.npmjs.com/package/nodejs-argo)
+- [问题反馈](https://github.com/eooce/nodejs-argo/issues)
+
+---
+
+## 赞助
+* 感谢[VPS.Town](https://vps.town)提供赞助 <a href="https://vps.town" target="_blank"><img src="https://vps.town/static/images/sponsor.png" width="30%" alt="https://vps.town"></a>
+
+* 感谢[ZMTO](https://zmto.com/?affid=1548)提供赞助优质双isp vps。
   
 # 免责声明
 * 本程序仅供学习了解, 非盈利目的，请于下载后 24 小时内删除, 不得用作任何商业用途, 文字、数据及图片均有所属版权, 如转载须注明来源。
